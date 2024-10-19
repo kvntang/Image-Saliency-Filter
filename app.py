@@ -28,6 +28,8 @@ def process_image():
 
         # Initialize the static saliency spectral residual detector
         saliency = cv2.saliency.StaticSaliencySpectralResidual_create()
+        # saliency = cv2.saliency.StaticSaliencyFineGrained_create()
+        # saliency = cv2.saliency.ObjectnessBING_create()
 
         # Compute the saliency map
         success, saliencyMap = saliency.computeSaliency(image)
@@ -35,14 +37,25 @@ def process_image():
         if not success:
             return jsonify({"error": "Saliency computation failed."}), 500  # Internal server error
 
-        # Convert the saliency map to 8-bit grayscale image
+        #V1
         saliencyMap = (saliencyMap * 255).astype("uint8")
-
-        # Threshold the saliency map to get the binary mask
         _, threshMap = cv2.threshold(saliencyMap, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
 
-        # Apply the mask to the original image to get the cleaned-up version
-        masked_image = cv2.bitwise_and(image, image, mask=threshMap)
+        # Create a white background
+        white_background = np.ones_like(image) * 255
+        
+        # Use the mask to combine the original image with the white background
+        masked_image = np.where(threshMap[:, :, np.newaxis] == 255, image, white_background)
+
+        #V2
+        # saliencyMap = cv2.normalize(saliencyMap, None, 0, 1, cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+        # # Ensure the saliency map has three channels
+        # if len(saliencyMap.shape) == 2 or saliencyMap.shape[2] == 1:
+        #     saliencyMap = cv2.cvtColor(saliencyMap, cv2.COLOR_GRAY2BGR)
+        # image_float = image.astype("float32")
+        # masked_image = cv2.multiply(image_float, saliencyMap)
+        # masked_image = np.clip(masked_image, 0, 255).astype("uint8")
+
 
         # Convert the processed image to a format that can be sent back
         _, buffer = cv2.imencode('.png', masked_image)
