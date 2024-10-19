@@ -26,12 +26,26 @@ def process_image():
         if image is None:
             return jsonify({"error": "Invalid image data."}), 400
 
-        # Process image (e.g., edge detection)
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        edges = cv2.Canny(gray, 100, 200)
+        # Initialize the static saliency spectral residual detector
+        saliency = cv2.saliency.StaticSaliencySpectralResidual_create()
+
+        # Compute the saliency map
+        success, saliencyMap = saliency.computeSaliency(image)
+
+        if not success:
+            return jsonify({"error": "Saliency computation failed."}), 500  # Internal server error
+
+        # Convert the saliency map to 8-bit grayscale image
+        saliencyMap = (saliencyMap * 255).astype("uint8")
+
+        # Threshold the saliency map to get the binary mask
+        _, threshMap = cv2.threshold(saliencyMap, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+
+        # Apply the mask to the original image to get the cleaned-up version
+        masked_image = cv2.bitwise_and(image, image, mask=threshMap)
 
         # Convert the processed image to a format that can be sent back
-        _, buffer = cv2.imencode('.png', edges)
+        _, buffer = cv2.imencode('.png', masked_image)
         io_buf = io.BytesIO(buffer)
 
         # Send the processed image back as a response
