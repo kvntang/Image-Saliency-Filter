@@ -40,10 +40,8 @@ def process_image():
         #V1
         saliencyMap = (saliencyMap * 255).astype("uint8")
         _, threshMap = cv2.threshold(saliencyMap, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
-
         # Create a white background
         white_background = np.ones_like(image) * 255
-        
         # Use the mask to combine the original image with the white background
         masked_image = np.where(threshMap[:, :, np.newaxis] == 255, image, white_background)
 
