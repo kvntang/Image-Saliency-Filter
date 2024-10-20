@@ -40,8 +40,8 @@ def process_image():
         #V1
         # saliencyMap = (saliencyMap * 255).astype("uint8")
         # _, threshMap = cv2.threshold(saliencyMap, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
-        # white_background = np.ones_like(image) * 255
-        # masked_image = np.where(threshMap[:, :, np.newaxis] == 255, image, white_background)
+        # black_background = np.zeros_like(image)
+        # masked_image = np.where(threshMap[:, :, np.newaxis] == 255, image, black_background)
 
         #V2
         saliencyMap = cv2.normalize(saliencyMap, None, 0, 1, cv2.NORM_MINMAX, dtype=cv2.CV_32F)
