@@ -44,13 +44,14 @@ def process_image():
         # masked_image = np.where(threshMap[:, :, np.newaxis] == 255, image, black_background)
 
         #V2
-        saliencyMap = cv2.normalize(saliencyMap, None, 0, 1, cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+        saliencyMap = cv2.normalize(saliencyMap, None, 0.1, 1, cv2.NORM_MINMAX, dtype=cv2.CV_32F)
         # Ensure the saliency map has three channels
         if len(saliencyMap.shape) == 2 or saliencyMap.shape[2] == 1:
             saliencyMap = cv2.cvtColor(saliencyMap, cv2.COLOR_GRAY2BGR)
         image_float = image.astype("float32")
         masked_image = cv2.multiply(image_float, saliencyMap)
-        masked_image = np.clip(masked_image, 0, 255).astype("uint8")
+        masked_image = np.clip(masked_image, 5, 255).astype("uint8")
+        
 
 
         # Convert the processed image to a format that can be sent back
